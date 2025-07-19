@@ -1602,3 +1602,359 @@ Son archivos que contienen funciones ya implementadas.
 ## XXIV. Conclusión
 
 C++ es un lenguaje poderoso que combina eficiencia y control. Dominar sus estructuras fundamentales es esencial para resolver problemas complejos de manera eficiente.
+
+![alt text](image-12.png)
+
+```markdown
+# CAPÍTULO x 
+ÁRBOLES BALANCEADOS Y SUS VARIANTES
+
+---
+
+Este capítulo presenta diferentes estructuras de árboles balanceados fundamentales para mantener operaciones eficientes como búsqueda, inserción y eliminación. Se cubren los siguientes tipos:
+
+- Árbol AVL  
+- Árbol B / B+  
+- Árbol Heap  
+- Árbol Rojo-Negro  
+
+---
+
+## X.1 Árbol AVL
+
+Los **árboles AVL** son árboles binarios de búsqueda auto-balanceados. Tras cada operación de inserción o eliminación, se verifica y ajusta el equilibrio del árbol mediante rotaciones. El nombre proviene de sus creadores: Adelson-Velsky y Landis.
+
+### X.1.1 Propiedades del árbol AVL
+
+- El **factor de equilibrio** (altura izquierda - altura derecha) de cualquier nodo es -1, 0 o 1.  
+- Si un nodo se desequilibra, se aplica una **rotación** para restablecer el equilibrio.  
+
+### X.1.2 Rotaciones
+
+Existen cuatro tipos principales de rotaciones:
+
+- **LL**: Rotación simple a la derecha.  
+- **RR**: Rotación simple a la izquierda.  
+- **LR**: Rotación doble izquierda-derecha.  
+- **RL**: Rotación doble derecha-izquierda.
+
+```pseudo
+1) algoritmo RotarDerecha(y)
+2)     x ← y.izquierda
+3)     T2 ← x.derecha
+4)     x.derecha ← y
+5)     y.izquierda ← T2
+6)     actualizarAltura(y)
+7)     actualizarAltura(x)
+8)     retornar x
+9) fin RotarDerecha
+```
+
+### X.1.3 Inserción
+
+```pseudo
+1) algoritmo InsertarAVL(nodo, valor)
+2)     si nodo = ∅
+3)         retornar nuevoNodo(valor)
+4)     si valor < nodo.valor
+5)         nodo.izquierda ← InsertarAVL(nodo.izquierda, valor)
+6)     sino si valor > nodo.valor
+7)         nodo.derecha ← InsertarAVL(nodo.derecha, valor)
+8)     sino
+9)         retornar nodo // No se permiten duplicados
+10)    actualizarAltura(nodo)
+11)    balance ← obtenerBalance(nodo)
+12)    si balance > 1 y valor < nodo.izquierda.valor
+13)        retornar RotarDerecha(nodo) // LL
+14)    si balance < -1 y valor > nodo.derecha.valor
+15)        retornar RotarIzquierda(nodo) // RR
+16)    si balance > 1 y valor > nodo.izquierda.valor
+17)        nodo.izquierda ← RotarIzquierda(nodo.izquierda)
+18)        retornar RotarDerecha(nodo) // LR
+19)    si balance < -1 y valor < nodo.derecha.valor
+20)        nodo.derecha ← RotarDerecha(nodo.derecha)
+21)        retornar RotarIzquierda(nodo) // RL
+22)    retornar nodo
+23) fin InsertarAVL
+```
+## ✅ Ejemplo de Árbol AVL
+
+Insertamos los valores: `10, 20, 30`
+
+1. Insertamos 10 →  
+```
+10
+```
+
+2. Insertamos 20 →  
+```
+  10
+    \
+    20
+```
+
+3. Insertamos 30 → Se produce desbalance (caso RR), se realiza rotación izquierda:
+
+```
+   20
+  /  \
+10   30
+```
+
+El árbol queda balanceado después de la rotación.
+
+---
+---
+
+## X.2 Árbol B
+
+Los **árboles B** son árboles m-arios balanceados utilizados principalmente en sistemas de bases de datos y archivos. Son altamente eficientes para almacenamiento externo (disco).
+
+### X.2.1 Propiedades
+
+- Cada nodo contiene hasta *m - 1* claves y *m* hijos.  
+- Todas las hojas están al mismo nivel.  
+- Las claves dentro de cada nodo están ordenadas.  
+- La inserción, búsqueda y eliminación son **O(log n)**.
+
+### X.2.2 Inserción en Árbol B
+
+```pseudo
+1) algoritmo InsertarB(raíz, clave)
+2)     si raíz está llena
+3)         s ← nuevoNodo()
+4)         s.hijos[0] ← raíz
+5)         DividirHijo(s, 0)
+6)         InsertarNoLleno(s, clave)
+7)         retornar s
+8)     sino
+9)         InsertarNoLleno(raíz, clave)
+10)    retornar raíz
+11) fin InsertarB
+```
+## ✅ Ejemplo de Árbol B (orden 3)
+
+Insertamos los valores: `10, 20, 5, 6, 12`
+
+1. Insertamos 10, 20 →  
+```
+[10, 20]
+```
+
+2. Insertamos 5 →  
+```
+[5, 10, 20]
+```
+
+3. Insertamos 6 → nodo se divide:
+
+```
+        [10]
+       /    \
+ [5,6]      [20]
+```
+
+4. Insertamos 12 → se acomoda en el nodo derecho:
+
+```
+        [10]
+       /    \
+ [5,6]     [12,20]
+```
+
+---
+---
+
+## X.3 Árbol B+
+
+El **árbol B+** es una mejora del árbol B, ideal para consultas de rango. Su estructura optimiza el recorrido de los datos.
+
+### X.3.1 Diferencias clave con B
+
+- Las **claves reales** solo están en las **hojas**.  
+- Los **nodos internos** actúan como índices.  
+- Las hojas están **enlazadas horizontalmente** para recorridos rápidos.
+
+### X.3.2 Búsqueda
+
+```pseudo
+1) algoritmo BuscarBPlus(nodo, clave)
+2)     si nodo es hoja
+3)         retornar nodo si clave ∈ nodo.claves
+4)     sino
+5)         encontrar índice i tal que clave < claves[i]
+6)         retornar BuscarBPlus(nodo.hijos[i], clave)
+7) fin BuscarBPlus
+```
+## ✅ Ejemplo de Árbol B+ (orden 3)
+
+Insertamos: `5, 10, 15, 20, 25`
+
+Estructura final:
+
+```
+          [15]
+         /    \
+ [5,10]        [15,20,25]
+```
+
+- Las hojas contienen **todos los datos reales**.
+- Las hojas están **enlazadas** para recorridos:
+
+```
+[5,10] —→ [15,20,25]
+```
+
+Este árbol es eficiente para búsquedas y consultas por rango.
+
+---
+---
+
+## X.4 Árbol Heap (Montículo)
+
+Un **heap** es una estructura basada en árboles binarios completos donde se conserva una propiedad de orden:
+
+- **Min-Heap**: el valor del padre es menor o igual a sus hijos.  
+- **Max-Heap**: el valor del padre es mayor o igual a sus hijos.  
+
+Se implementa eficientemente mediante **arreglos lineales**.
+
+### X.4.1 Fórmulas de índice en arreglo
+
+- Padre(i) = (i - 1) / 2  
+- HijoIzq(i) = 2i + 1  
+- HijoDer(i) = 2i + 2
+
+### X.4.2 Inserción en Min-Heap
+
+```pseudo
+1) algoritmo InsertarHeap(heap, valor)
+2)     heap.agregar(valor)
+3)     i ← índice de último
+4)     mientras i > 0 y heap[i] < heap[Padre(i)]
+5)         intercambiar(heap[i], heap[Padre(i)])
+6)         i ← Padre(i)
+7)     fin mientras
+8) fin InsertarHeap
+```
+
+### X.4.3 Eliminación del mínimo
+
+```pseudo
+1) algoritmo ExtraerMin(heap)
+2)     si heap está vacío retornar ∅
+3)     min ← heap[0]
+4)     heap[0] ← heap[último]
+5)     eliminar último
+6)     i ← 0
+7)     mientras hijo válido y heap[i] > heap[hijo_menor(i)]
+8)         intercambiar(heap[i], heap[hijo_menor(i)])
+9)         i ← hijo_menor(i)
+10)    fin mientras
+11)    retornar min
+12) fin ExtraerMin
+```
+## ✅ Ejemplo de Heap (Min-Heap)
+
+Insertamos los valores: `40, 30, 50, 10, 20`
+
+Construcción paso a paso:
+
+1. Insertamos 40  
+2. Insertamos 30 → sube  
+3. Insertamos 50  
+4. Insertamos 10 → sube hasta raíz  
+5. Insertamos 20 → sube sobre 30
+
+Resultado final (árbol):
+
+```
+        10
+       /  \
+     20    50
+    /  \
+  40   30
+```
+
+El elemento mínimo (10) siempre se encuentra en la raíz.
+
+---
+---
+
+## X.5 Árbol Rojo-Negro
+
+Los **árboles rojo-negro** son árboles binarios de búsqueda balanceados mediante propiedades de color. Su rendimiento es cercano al de AVL, pero con menor costo en rotaciones.
+
+### X.5.1 Reglas
+
+1. Cada nodo es rojo o negro.  
+2. La raíz es negra.  
+3. Un nodo rojo no puede tener hijos rojos.  
+4. Cada camino desde un nodo a una hoja contiene el mismo número de nodos negros.
+
+### X.5.2 Inserción
+
+```pseudo
+1) algoritmo InsertarRB(raíz, nodo)
+2)     insertar como en BST
+3)     nodo.color ← ROJO
+4)     mientras nodo ≠ raíz y nodo.padre.color = ROJO
+5)         si nodo.padre es hijo izquierdo
+6)             tío ← nodo.padre.padre.derecho
+7)             si tío.color = ROJO
+8)                 recolorear padre, tío y abuelo
+9)             sino
+10)                si nodo = nodo.padre.derecha
+11)                    nodo ← nodo.padre
+12)                    rotarIzquierda(nodo)
+13)                rotarDerecha(nodo.padre.padre)
+14)                intercambiar colores
+15)         sino
+16)             // Casos simétricos
+17)     raíz.color ← NEGRO
+18) fin InsertarRB
+```
+## ✅ Ejemplo de Árbol Rojo-Negro
+
+Insertamos los valores: `10, 20, 30`
+
+1. Insertamos 10 → raíz, se pinta **negro**  
+2. Insertamos 20 → hijo rojo  
+3. Insertamos 30 → se produce violación de regla (dos rojos seguidos)
+
+Se aplica **rotación izquierda** y **recoloración**
+
+Resultado final:
+
+```
+     20 (negro)
+    /     \
+10 (rojo) 30 (rojo)
+```
+
+El árbol mantiene las propiedades rojo-negro:
+
+- Raíz negra  
+- No hay rojos consecutivos  
+- Igual número de nodos negros en todos los caminos
+
+
+```
+---
+
+## X.6 Resumen comparativo
+
+| Tipo de Árbol    | Altura Balanceada | Inserción  | Eliminación | Búsqueda  | Uso común                             |
+|------------------|-------------------|------------|-------------|-----------|----------------------------------------|
+| AVL              | Muy estricta      | O(log n)   | O(log n)    | O(log n)  | Búsqueda en memoria, rendimiento alto |
+| B                | Moderada          | O(log n)   | O(log n)    | O(log n)  | Bases de datos, discos                 |
+| B+               | Moderada          | O(log n)   | O(log n)    | O(log n)  | Consultas por rango, índices           |
+| Heap             | No ordenado       | O(log n)   | O(log n)    | O(n)      | Colas de prioridad, algoritmos greedy  |
+| Rojo-Negro       | Equilibrio flexible| O(log n)  | O(log n)    | O(log n)  | Set/map en lenguajes como Java o C++  |
+
+---
+
+**Conclusión:**  
+Cada tipo de árbol balanceado tiene ventajas específicas. El AVL ofrece máxima velocidad para búsquedas, el B/B+ optimiza el almacenamiento externo, el Heap es ideal para prioridades, y el Rojo-Negro ofrece balance eficiente con menos rotaciones. La elección correcta depende de la aplicación.
+```
+
